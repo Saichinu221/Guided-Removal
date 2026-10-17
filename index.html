@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Reversal Dashboard — With-L21 / Without-L21 / Aging70 / HAZ / HRV</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgo8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM3YzNhZWQiLz48c3RvcCBvZmZzZXQ9IjAuNSIgc3RvcC1jb2xvcj0iI2VjNDg5OSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA2YjZkNCIvPgo8L2xpbmVhckdyYWRpZW50PjwvZGVmcz4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9InVybCgjZykiLz4KPHRleHQgeD0iMzIiIHk9IjQ0IiBmb250LXNpemU9IjM0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmZmZmIiBmb250LWZhbWlseT0iQXJpYWwsIEhlbHZldGljYSwgc2Fucy1zZXJpZiI+JiM5ODgxOzwvdGV4dD4KPC9zdmc+Cg==">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root{
+    --bg-main:#1a1440;--bg-main2:#2a1a5e;--panel:#ffffff;--panel-ink:#241b4d;
+    --accent:#7c3aed;--accent2:#ec4899;--accent3:#06b6d4;
+    --good:#10b981;--bad:#ef4444;--warn:#f59e0b;
+    --sub:#6b6490;--line:#e7e3fb;
+    --shadow:0 10px 30px rgba(40,20,90,.18);
+  }
+  *{box-sizing:border-box;}
+  @keyframes float1{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(40px,-30px) scale(1.08);}}
+  @keyframes float2{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-50px,25px) scale(1.1);}}
+  @keyframes shimmer{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+  @keyframes panelIn{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+  @keyframes tblRowIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+  @keyframes pop{0%{transform:scale(.5);opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+  @keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.45);}50%{box-shadow:0 0 0 8px rgba(124,58,237,0);}}
+  @keyframes stripes{from{background-position:0 0;}to{background-position:40px 0;}}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+  @keyframes gearSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  @keyframes headerDrop{from{opacity:0;transform:translateY(-16px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes dotPulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.4);opacity:.6;}}
+  @keyframes runningFlow{0%{background-position:0% 50%;}100%{background-position:200% 50%;}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  body{
+    margin:0;font-family:"Segoe UI",Arial,sans-serif;color:var(--panel-ink);
+    min-height:100vh;position:relative;overflow-x:hidden;
+    background:linear-gradient(135deg,var(--bg-main),var(--bg-main2) 55%,#3b1d6e);
+  }
+  body::before,body::after{
+    content:"";position:fixed;border-radius:50%;filter:blur(70px);z-index:0;pointer-events:none;opacity:.55;
+  }
+  body::before{width:420px;height:420px;top:-120px;left:-100px;background:radial-gradient(circle,var(--accent),transparent 70%);animation:float1 16s ease-in-out infinite;}
+  body::after{width:380px;height:380px;bottom:-140px;right:-80px;background:radial-gradient(circle,var(--accent3),transparent 70%);animation:float2 18s ease-in-out infinite;}
+
+  header{
+    position:relative;z-index:2;padding:20px 28px;display:flex;align-items:center;gap:14px;
+    background:linear-gradient(100deg,var(--accent),var(--accent2),var(--accent3),var(--accent));
+    background-size:220% 220%;animation:shimmer 10s ease infinite;
+    box-shadow:0 4px 24px rgba(20,10,50,.35);
+  }
+  header{animation:headerDrop .55s ease both;}
+  header h1{
+    font-size:20px;margin:0 auto;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.25);letter-spacing:.02em;text-align:center;
+    animation:titlePulse 4s ease-in-out 1.2s infinite;
+  }
+  @keyframes titlePulse{0%,100%{text-shadow:0 2px 8px rgba(0,0,0,.25);}50%{text-shadow:0 2px 8px rgba(0,0,0,.25),0 0 18px rgba(255,255,255,.5);}}
+  header .gear{display:inline-block;animation:gearSpin 7s linear infinite;}
+  header .edit-master-btn{
+    position:absolute;right:28px;top:50%;transform:translateY(-50%);
+    background:rgba(255,255,255,.92);color:var(--accent);border:none;border-radius:10px;
+    padding:9px 16px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:.02em;
+    box-shadow:0 4px 14px rgba(0,0,0,.2);transition:transform .2s ease,box-shadow .2s ease;
+    animation:fadeUp .6s ease .15s both;
+  }
+  header .edit-master-btn:hover{transform:translateY(-50%) translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.28);}
+  .author-badge{display:flex;align-items:center;gap:6px;}
+  .author-name{
+    font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3),var(--accent));
+    background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.02em;
+    animation:authorShift 6s linear infinite;
+  }
+  @keyframes authorShift{0%{background-position:0% 50%;}100%{background-position:300% 50%;}}
+
+  .tabs{position:relative;z-index:2;display:flex;gap:8px;padding:14px 28px 0;background:transparent;flex-wrap:wrap;animation:fadeUp .5s ease .1s both;}
+  .tab-btn{
+    padding:10px 20px;cursor:pointer;background:rgba(255,255,255,.9);border:none;color:var(--sub);
+    font-size:13px;font-weight:600;border-radius:12px 12px 0 0;transition:all .25s ease;position:relative;top:2px;
+  }
+  .tab-btn:hover{color:var(--accent);transform:translateY(-2px);}
+  .tab-btn.active{
+    color:#fff;background:linear-gradient(120deg,var(--accent),var(--accent2));
+    box-shadow:0 -4px 16px rgba(124,58,237,.4);top:0;
+    animation:pulseGlow 2.4s ease-in-out infinite;
+  }
+
+  .wrap{position:relative;z-index:1;padding:24px 28px 60px;max-width:1300px;margin:0 auto;}
+  .tabpanel{display:none;}
+  .tabpanel.active{display:block;animation:panelIn .45s ease both;}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .grid>div:nth-child(1) .card{animation-delay:0s;}
+  .grid>div:nth-child(2) .card{animation-delay:.1s;}
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:18px;
+    box-shadow:var(--shadow);animation:panelIn .5s ease both;transition:box-shadow .25s ease,transform .25s ease;
+  }
+  .card:hover{box-shadow:0 14px 36px rgba(40,20,90,.24);transform:translateY(-2px);}
+  .card h3{
+    margin:0 0 12px 0;font-size:12px;text-transform:uppercase;letter-spacing:.09em;font-weight:700;
+    background:linear-gradient(120deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;
+    display:flex;align-items:center;gap:7px;
+  }
+  .card h3::before{
+    content:"";width:7px;height:7px;border-radius:50%;flex-shrink:0;
+    background:linear-gradient(120deg,var(--accent),var(--accent3));
+    animation:dotPulse 1.8s ease-in-out infinite;
+  }
+  label{display:block;font-size:13px;margin:12px 0 5px;color:var(--sub);font-weight:600;}
+  input[type=file]{width:100%;color:var(--panel-ink);font-size:12.5px;padding:6px 0;}
+  input[type=number],input[type=text]{
+    width:100%;padding:9px 11px;border-radius:9px;border:1.5px solid var(--line);background:#faf9ff;
+    color:var(--panel-ink);font-size:13px;transition:border-color .2s,box-shadow .2s;
+  }
+  input[type=number]:focus,input[type=text]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,58,237,.15);}
+  .radiorow{display:flex;gap:18px;margin-top:6px;}
+  .radiorow label{display:flex;align-items:center;gap:6px;margin:0;color:var(--panel-ink);font-size:13px;font-weight:500;}
+  .hint{font-size:11.5px;color:var(--sub);margin-top:8px;line-height:1.5;background:#f6f4ff;border-left:3px solid var(--accent3);padding:8px 10px;border-radius:0 8px 8px 0;}
+
+  .runbtn{
+    margin-top:18px;width:100%;padding:13px;border:none;border-radius:12px;color:#fff;font-weight:700;font-size:14px;
+    cursor:pointer;position:relative;overflow:hidden;letter-spacing:.02em;
+    background:linear-gradient(120deg,var(--accent),var(--accent2));
+    box-shadow:0 6px 18px rgba(124,58,237,.35);transition:transform .2s ease,box-shadow .2s ease;
+  }
+  .runbtn::before{
+    content:"";position:absolute;top:0;left:-75%;width:50%;height:100%;
+    background:linear-gradient(120deg,transparent,rgba(255,255,255,.45),transparent);
+    transform:skewX(-20deg);transition:left .5s ease;
+  }
+  .runbtn:hover::before{left:125%;}
+  .runbtn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(124,58,237,.5);}
+  .runbtn:active{transform:translateY(0);}
+  .runbtn:disabled{
+    cursor:wait;transform:none;opacity:1;
+    background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3),var(--accent));
+    background-size:300% 100%;animation:runningFlow 1.4s linear infinite;
+    box-shadow:0 6px 18px rgba(124,58,237,.3);
+  }
+
+  pre.log{
+    background:linear-gradient(165deg,#140f33,#1f1550);border:1px solid #3a2b70;border-radius:12px;
+    padding:14px;height:260px;overflow-y:auto;font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word;
+    color:#c9c3f0;font-family:Consolas,"SF Mono",monospace;box-shadow:inset 0 0 24px rgba(0,0,0,.25);
+  }
+  pre.log::-webkit-scrollbar{width:8px;}
+  pre.log::-webkit-scrollbar-thumb{background:var(--accent);border-radius:8px;}
+
+  table.summary{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px;border-radius:10px;overflow:hidden;box-shadow:var(--shadow);}
+  table.summary th,table.summary td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);}
+  table.summary th{
+    color:#fff;font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;
+    background:linear-gradient(120deg,var(--accent),var(--accent3));
+  }
+  table.summary tbody tr{background:#fff;animation:tblRowIn .35s ease both;transition:background .15s ease;}
+  table.summary tbody tr:nth-child(even){background:#f8f6ff;}
+  table.summary tbody tr:hover{background:#efe9ff;}
+  table.summary tbody tr:nth-child(1){animation-delay:.03s;}
+  table.summary tbody tr:nth-child(2){animation-delay:.06s;}
+  table.summary tbody tr:nth-child(3){animation-delay:.09s;}
+  table.summary tbody tr:nth-child(4){animation-delay:.12s;}
+  table.summary tbody tr:nth-child(5){animation-delay:.15s;}
+  table.summary tbody tr:nth-child(n+6){animation-delay:.18s;}
+
+  .pill{display:inline-block;padding:3px 12px;border-radius:12px;font-size:12px;font-weight:700;letter-spacing:.03em;animation:pop .4s ease both;}
+  .pill.ok{background:linear-gradient(120deg,var(--good),#34d399);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,.4);}
+  .badge{font-size:10.5px;background:#f1edff;border:1px solid var(--line);border-radius:7px;padding:2px 8px;color:var(--accent);margin-left:6px;font-weight:600;}
+  .dl-btn{
+    display:inline-block;margin-top:12px;padding:10px 18px;background:linear-gradient(120deg,var(--good),#059669);
+    color:#fff;border-radius:9px;text-decoration:none;font-size:13px;font-weight:700;box-shadow:0 6px 16px rgba(16,185,129,.35);
+    transition:transform .2s ease,box-shadow .2s ease;animation:pop .45s ease both;
+  }
+  .dl-btn:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(16,185,129,.45);}
+  .section-note{font-size:12px;color:var(--warn);margin:8px 0 0;font-weight:600;}
+  .flexrow{display:flex;gap:12px;}
+  .flexrow>div{flex:1;}
+
+  .author-badge{
+    position:fixed;right:16px;bottom:14px;z-index:5;font-size:11px;color:#fff;
+    background:rgba(26,20,64,.75);border:1px solid rgba(255,255,255,.25);border-radius:20px;
+    padding:6px 14px;backdrop-filter:blur(6px);box-shadow:0 4px 14px rgba(0,0,0,.25);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation:none !important;transition:none !important;}
+  }
+  .me-overlay{
+    display:none;position:fixed;inset:0;z-index:50;background:rgba(20,12,45,.6);
+    backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:24px;
+    animation:fadeUp .25s ease both;
+  }
+  .me-panel{
+    background:#fff;border-radius:18px;max-width:980px;width:100%;max-height:85vh;
+    display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.35);
+    animation:panelIn .3s ease both;overflow:hidden;
+  }
+  .me-panel-head{
+    display:flex;align-items:center;justify-content:space-between;padding:16px 22px;
+    background:linear-gradient(120deg,var(--accent),var(--accent2));color:#fff;
+  }
+  .me-panel-head h2{margin:0;font-size:16px;font-weight:700;display:flex;align-items:baseline;gap:10px;}
+  .me-sub{font-size:11px;font-weight:500;opacity:.85;}
+  .me-close{background:none;border:none;color:#fff;font-size:26px;line-height:1;cursor:pointer;padding:0 4px;}
+  .me-close:hover{opacity:.7;}
+  .me-toolbar{display:flex;align-items:center;gap:10px;padding:14px 22px 4px;flex-wrap:wrap;}
+  .me-toolbar input[type=text]{
+    flex:1;min-width:200px;padding:9px 12px;border-radius:9px;border:1.5px solid var(--line);
+    background:#faf9ff;font-size:13px;
+  }
+  .me-btn{
+    border:none;border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:700;cursor:pointer;
+    transition:transform .15s ease,box-shadow .15s ease;white-space:nowrap;
+  }
+  .me-btn:hover{transform:translateY(-1px);}
+  .me-btn-add{background:#f1edff;color:var(--accent);}
+  .me-btn-save{background:linear-gradient(120deg,var(--good),#059669);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,.35);}
+  .me-btn-export{background:linear-gradient(120deg,var(--accent3),#0891b2);color:#fff;box-shadow:0 4px 12px rgba(6,182,212,.35);}
+  .me-count{font-size:11.5px;color:var(--sub);margin-left:auto;font-weight:600;}
+  .me-status{font-size:11.5px;color:var(--sub);margin:8px 22px 0;line-height:1.5;}
+  .me-table-wrap{overflow:auto;margin:12px 22px 20px;border-radius:10px;box-shadow:var(--shadow);}
+  table.me-table{width:100%;border-collapse:collapse;font-size:13px;}
+  table.me-table th{
+    position:sticky;top:0;color:#fff;font-weight:600;font-size:11px;text-transform:uppercase;
+    letter-spacing:.04em;background:linear-gradient(120deg,var(--accent),var(--accent3));
+    padding:9px 10px;text-align:left;z-index:1;
+  }
+  table.me-table td{padding:4px 6px;border-bottom:1px solid var(--line);background:#fff;}
+  table.me-table tbody tr:nth-child(even) td{background:#f8f6ff;}
+  table.me-table input{
+    width:100%;border:1px solid transparent;background:transparent;padding:6px 7px;
+    border-radius:6px;font-size:12.5px;color:var(--panel-ink);
+  }
+  table.me-table input:focus{outline:none;border-color:var(--accent);background:#fff;}
+  .me-del{
+    background:none;border:none;color:var(--bad);font-size:15px;cursor:pointer;padding:4px 8px;
+    border-radius:6px;transition:background .15s ease;
+  }
+  .me-del:hover{background:#fde8e8;}
+  .tez-file-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
+  .tez-chip{
+    display:inline-flex;align-items:center;gap:6px;background:#f1edff;color:var(--accent);
+    border-radius:14px;padding:4px 6px 4px 11px;font-size:11.5px;font-weight:600;
+    animation:pop .3s ease both;max-width:220px;
+  }
+  .tez-chip-x{
+    background:rgba(124,58,237,.15);border:none;border-radius:50%;width:16px;height:16px;
+    font-size:10px;line-height:1;cursor:pointer;color:var(--accent);flex-shrink:0;
+  }
+  .tez-chip-x:hover{background:rgba(124,58,237,.3);}
+</style>
+</head>
+<body>
+<div class="author-badge">Author: <span class="author-name">Sai Ram Chandupatla</span></div>
+
+<div class="me-overlay" id="masterEditOverlay">
+  <div class="me-panel">
+    <div class="me-panel-head">
+      <h2>&#9998; Edit Master Data <span class="me-sub">Sites &middot; Destinations &middot; Site Codes</span></h2>
+      <button class="me-close" id="masterEditCloseBtn" title="Close">&times;</button>
+    </div>
+    <div class="me-toolbar">
+      <input type="text" id="masterEditSearch" placeholder="Search site / code / destination / city...">
+      <button class="me-btn me-btn-add" id="masterEditAddBtn">+ Add Row</button>
+      <button class="me-btn me-btn-save" id="masterEditSaveBtn">&#128190; Save Changes</button>
+      <button class="me-btn me-btn-export" id="masterEditExportBtn">&#8681; Download XLSX</button>
+      <span class="me-count" id="masterEditCount"></span>
+    </div>
+    <p class="me-status" id="masterEditStatus">Editing the built-in dataset used by every tab when no Master_File.xlsx is uploaded. Click Save to apply for this session, or Download XLSX to keep a copy.</p>
+    <div class="me-table-wrap">
+      <table class="me-table">
+        <thead><tr><th>Site</th><th>Site Code</th><th>Destination</th><th>City</th><th></th></tr></thead>
+        <tbody id="masterEditBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<header>
+  <h1><span class="gear">⚙</span> Reversal Dashboard (Master File)</h1>
+  <button class="edit-master-btn" id="openMasterEditBtn" title="Edit built-in Master Data (Sites / Destinations / Site Codes)">✎ Edit Master Data</button>
+</header>
+
+<div class="tabs" id="tabbar">
+  <button class="tab-btn active" data-tab="withl21">1. With-L21</button>
+  <button class="tab-btn" data-tab="withoutl21">2. Without-L21</button>
+  <button class="tab-btn" data-tab="aging70">3. Aging 70+</button>
+  <button class="tab-btn" data-tab="haz">4. HAZ</button>
+  <button class="tab-btn" data-tab="hrv">5. HRV</button>
+</div>
+
+<div class="wrap">
+
+<!-- =========================== TAB: WITH-L21 =========================== -->
+<div class="tabpanel active" id="panel-withl21">
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h3>Inputs</h3>
+        <label>Master_File.xlsx <span class="badge">optional — uses built-in Master Data if empty</span></label>
+        <input type="file" id="withl21-master" accept=".xlsx,.xlsm,.xls">
+        <label>TEZ Master File(s) <span class="badge">select one at a time — each adds to the list</span></label>
+        <input type="file" id="withl21-tez" accept=".xlsx,.xlsm,.xls" multiple>
+        <div class="tez-file-list" id="withl21-tez-list"></div>
+        <label>L21 Data File (.txt / .csv — asin_fc, sale_days_l21, units_l21)</label>
+        <input type="file" id="withl21-l21" accept=".txt,.csv">
+        <label>Inventory CSV File(s)</label>
+        <input type="file" id="withl21-csv" accept=".csv" multiple>
+        <div class="flexrow">
+          <div>
+            <label>Mode</label>
+            <div class="radiorow">
+              <label><input type="radio" name="withl21-mode" value="aging" checked> Aging mode</label>
+              <label><input type="radio" name="withl21-mode" value="standard"> Standard mode</label>
+            </div>
+          </div>
+        </div>
+        <div class="flexrow">
+          <div><label>Min aging days</label><input type="number" id="withl21-age" value="12"></div>
+          <div><label>Max qty per store</label><input type="number" id="withl21-maxqty" value="1000"></div>
+        </div>
+        <p class="hint">Zones: AMB / HAZ / HRV / MLK / TEM / TEMP. Forced ASINs (Remove_Selection status=removed) always included. Non-forced require a valid non-P3 TEZ seller + age &gt;= threshold.</p>
+        <button class="runbtn" id="withl21-run">Run With-L21</button>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Live Log</h3>
+        <pre class="log" id="withl21-log">Idle. Pick files and click Run.</pre>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="withl21-results" style="display:none;">
+    <h3>Results</h3>
+    <div id="withl21-summary"></div>
+  </div>
+</div>
+
+<!-- =========================== TAB: WITHOUT-L21 =========================== -->
+<div class="tabpanel" id="panel-withoutl21">
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h3>Inputs</h3>
+        <label>Master_File.xlsx <span class="badge">optional — uses built-in Master Data if empty</span></label>
+        <input type="file" id="withoutl21-master" accept=".xlsx,.xlsm,.xls">
+        <label>TEZ Master File(s) <span class="badge">select one at a time — each adds to the list</span></label>
+        <input type="file" id="withoutl21-tez" accept=".xlsx,.xlsm,.xls" multiple>
+        <div class="tez-file-list" id="withoutl21-tez-list"></div>
+        <label>Inventory CSV File(s)</label>
+        <input type="file" id="withoutl21-csv" accept=".csv" multiple>
+        <div class="flexrow">
+          <div>
+            <label>Mode</label>
+            <div class="radiorow">
+              <label><input type="radio" name="withoutl21-mode" value="aging" checked> Aging mode</label>
+              <label><input type="radio" name="withoutl21-mode" value="standard"> Standard mode (no age filter)</label>
+            </div>
+          </div>
+        </div>
+        <div class="flexrow">
+          <div><label>Min aging days (aging mode only)</label><input type="number" id="withoutl21-age" value="12"></div>
+          <div><label>Max qty per store</label><input type="number" id="withoutl21-maxqty" value="1000"></div>
+        </div>
+        <p class="hint">No L21 file needed. Non-forced rows qualify if ASIN has no TEZ seller match ("N/A") and (aging mode) age &gt;= threshold. No row aggregation.</p>
+        <button class="runbtn" id="withoutl21-run">Run Without-L21</button>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Live Log</h3>
+        <pre class="log" id="withoutl21-log">Idle. Pick files and click Run.</pre>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="withoutl21-results" style="display:none;">
+    <h3>Results</h3>
+    <div id="withoutl21-summary"></div>
+  </div>
+</div>
+
+<!-- =========================== TAB: AGING 70+ =========================== -->
+<div class="tabpanel" id="panel-aging70">
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h3>Inputs</h3>
+        <label>Master_File.xlsx <span class="badge">optional — uses built-in Master Data if empty</span></label>
+        <input type="file" id="aging70-master" accept=".xlsx,.xlsm,.xls">
+        <label>Inventory CSV File(s)</label>
+        <input type="file" id="aging70-csv" accept=".csv" multiple>
+        <div class="flexrow">
+          <div><label>Min aging days</label><input type="number" id="aging70-age" value="70"></div>
+          <div><label>Max qty per store</label><input type="number" id="aging70-maxqty" value="1000"></div>
+        </div>
+        <p class="hint">Zones: AMB / HAZ only. No TEZ/L21 needed. Forced ASINs bypass the age filter. Sorted by age descending, filename prefix Aging70_.</p>
+        <button class="runbtn" id="aging70-run">Run Aging 70+</button>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Live Log</h3>
+        <pre class="log" id="aging70-log">Idle. Pick files and click Run.</pre>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="aging70-results" style="display:none;">
+    <h3>Results</h3>
+    <div id="aging70-summary"></div>
+  </div>
+</div>
+
+<!-- =========================== TAB: HAZ =========================== -->
+<div class="tabpanel" id="panel-haz">
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h3>Inputs</h3>
+        <label>Master_File.xlsx <span class="badge">optional — uses built-in Master Data if empty</span></label>
+        <input type="file" id="haz-master" accept=".xlsx,.xlsm,.xls">
+        <label>Inventory CSV File(s)</label>
+        <input type="file" id="haz-csv" accept=".csv" multiple>
+        <div class="flexrow">
+          <div><label>Min aging days</label><input type="number" id="haz-age" value="70"></div>
+          <div><label>Max qty per store</label><input type="number" id="haz-maxqty" value="1000"></div>
+        </div>
+        <p class="hint">Zone: HAZ only. Filename prefix HAZ_.</p>
+        <button class="runbtn" id="haz-run">Run HAZ</button>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Live Log</h3>
+        <pre class="log" id="haz-log">Idle. Pick files and click Run.</pre>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="haz-results" style="display:none;">
+    <h3>Results</h3>
+    <div id="haz-summary"></div>
+  </div>
+</div>
+
+<!-- =========================== TAB: HRV =========================== -->
+<div class="tabpanel" id="panel-hrv">
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h3>Inputs</h3>
+        <label>Master_File.xlsx <span class="badge">optional — uses built-in Master Data if empty</span></label>
+        <input type="file" id="hrv-master" accept=".xlsx,.xlsm,.xls">
+        <label>Inventory CSV File(s)</label>
+        <input type="file" id="hrv-csv" accept=".csv" multiple>
+        <div class="flexrow">
+          <div><label>Min aging days</label><input type="number" id="hrv-age" value="70"></div>
+          <div><label>Max qty per store</label><input type="number" id="hrv-maxqty" value="1000"></div>
+        </div>
+        <p class="hint">Zone: HRV only. Filename prefix HRV_.</p>
+        <button class="runbtn" id="hrv-run">Run HRV</button>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Live Log</h3>
+        <pre class="log" id="hrv-log">Idle. Pick files and click Run.</pre>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="hrv-results" style="display:none;">
+    <h3>Results</h3>
+    <div id="hrv-summary"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const OUT_COLS = ["storeId","removal_type","asin","quantity","zone","destination","vendor_code","expirationInDays","removal_code","binId"];
+const VALID_ZONES_FULL = new Set(["AMB","HAZ","HRV","MLK","TEM","TEMP"]);
+let EMBEDDED_MASTER_DATA = [];
+
+function buildEmbeddedMasterWorkbook(){
+  const aoa = [["site code","site","city","destination"]];
+  EMBEDDED_MASTER_DATA.forEach(r=>{ aoa.push([r[1], r[0], r[3], r[2]]); });
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const wbOut = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wbOut, ws, "Sites");
+  return wbOut;
+}
+
+function renderMasterEditTable(filterText){
+  const tbody = document.getElementById("masterEditBody");
+  const q = (filterText||"").trim().toLowerCase();
+  const rowsHtml = EMBEDDED_MASTER_DATA.map(r=>{
+    if(q){
+      const hay = (r[0]+" "+r[1]+" "+r[2]+" "+r[3]).toLowerCase();
+      if(!hay.includes(q)) return "";
+    }
+    return '<tr>'
+      + '<td><input class="me-site" value="'+escapeHtmlAttr(r[0])+'"></td>'
+      + '<td><input class="me-code" value="'+escapeHtmlAttr(r[1])+'"></td>'
+      + '<td><input class="me-dest" value="'+escapeHtmlAttr(r[2])+'"></td>'
+      + '<td><input class="me-city" value="'+escapeHtmlAttr(r[3])+'"></td>'
+      + '<td><button class="me-del" title="Delete row">\u2715</button></td>'
+      + '</tr>';
+  }).join("");
+  tbody.innerHTML = rowsHtml;
+  document.getElementById("masterEditCount").textContent = EMBEDDED_MASTER_DATA.length + " sites";
+}
+function escapeHtmlAttr(s){
+  return String(s===undefined||s===null?"":s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+}
+function readMasterEditTable(){
+  const rows = [...document.querySelectorAll("#masterEditBody tr")];
+  const out = [];
+  rows.forEach(tr=>{
+    const site = tr.querySelector(".me-site").value.trim();
+    if(!site) return;
+    const code = tr.querySelector(".me-code").value.trim();
+    const dest = tr.querySelector(".me-dest").value.trim();
+    const city = tr.querySelector(".me-city").value.trim();
+    out.push([site, code, dest, city]);
+  });
+  return out;
+}
+function openMasterEditor(){
+  document.getElementById("masterEditOverlay").style.display = "flex";
+  document.getElementById("masterEditSearch").value = "";
+  renderMasterEditTable("");
+}
+function closeMasterEditor(){
+  document.getElementById("masterEditOverlay").style.display = "none";
+}
+document.getElementById("openMasterEditBtn").addEventListener("click", openMasterEditor);
+document.getElementById("masterEditCloseBtn").addEventListener("click", closeMasterEditor);
+document.getElementById("masterEditOverlay").addEventListener("click", (e)=>{ if(e.target.id==="masterEditOverlay") closeMasterEditor(); });
+document.getElementById("masterEditSearch").addEventListener("input", (e)=> renderMasterEditTable(e.target.value));
+document.getElementById("masterEditAddBtn").addEventListener("click", ()=>{
+  const tbody = document.getElementById("masterEditBody");
+  const tr = document.createElement("tr");
+  tr.innerHTML = '<td><input class="me-site" value=""></td><td><input class="me-code" value=""></td><td><input class="me-dest" value=""></td><td><input class="me-city" value=""></td><td><button class="me-del" title="Delete row">\u2715</button></td>';
+  tbody.prepend(tr);
+  tr.querySelector(".me-site").focus();
+});
+document.getElementById("masterEditBody").addEventListener("click", (e)=>{
+  if(e.target.classList.contains("me-del")) e.target.closest("tr").remove();
+});
+document.getElementById("masterEditSaveBtn").addEventListener("click", ()=>{
+  EMBEDDED_MASTER_DATA = readMasterEditTable();
+  document.getElementById("masterEditStatus").textContent = "Saved \u2713 (" + EMBEDDED_MASTER_DATA.length + " sites) \u2014 applies to all tabs when no Master_File is uploaded.";
+  renderMasterEditTable(document.getElementById("masterEditSearch").value);
+});
+document.getElementById("masterEditExportBtn").addEventListener("click", ()=>{
+  const data = readMasterEditTable();
+  const aoa = [["Site","Site Code","Destination","City"]];
+  data.forEach(r=> aoa.push([r[0], r[1], r[2], r[3]]));
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const wbOut = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wbOut, ws, "Sites");
+  XLSX.writeFile(wbOut, "Master_Data_Edited_" + new Date().toISOString().slice(0,10) + ".xlsx");
+});
+
+function log(tabId, msg){
+  const el = document.getElementById(tabId+"-log");
+  if(el.textContent === "Idle. Pick files and click Run.") el.textContent = "";
+  el.textContent += msg + "\n";
+  el.scrollTop = el.scrollHeight;
+}
+function clearLog(tabId){ document.getElementById(tabId+"-log").textContent = ""; }
+function cleanStr(v){
+  if(v===null||v===undefined) return "";
+  const s = String(v).trim();
+  return (s.toLowerCase()==="nan") ? "" : s;
+}
+function toNum(v, dflt){
+  const n = parseFloat(v);
+  return isNaN(n) ? (dflt||0) : n;
+}
+function extractZone(bin){
+  const b = cleanStr(bin).replace(/^Bin:/i,"").trim();
+  const dash = b.indexOf("-");
+  if(dash > 0) return b.substring(0, dash);
+  return "";
+}
+function cleanBin(bin){ return cleanStr(bin).replace(/^Bin:/i,"").trim(); }
+
+const tezFileStore = { withl21: [], withoutl21: [] };
+function escTezName(s){
+  return String(s===undefined||s===null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+}
+function renderTezFileList(tabId){
+  const el = document.getElementById(tabId+"-tez-list");
+  if(!el) return;
+  const files = tezFileStore[tabId];
+  if(!files.length){ el.innerHTML = ""; return; }
+  el.innerHTML = files.map((f,i)=>
+    '<span class="tez-chip">'+escTezName(f.name)+'<button class="tez-chip-x" data-tab="'+tabId+'" data-idx="'+i+'" title="Remove">\u2715</button></span>'
+  ).join("");
+}
+function wireTezAccumulator(tabId){
+  const input = document.getElementById(tabId+"-tez");
+  if(!input) return;
+  input.addEventListener("change", ()=>{
+    const newFiles = Array.from(input.files);
+    newFiles.forEach(f=>{
+      const dup = tezFileStore[tabId].some(existing=> existing.name===f.name && existing.size===f.size && existing.lastModified===f.lastModified);
+      if(!dup) tezFileStore[tabId].push(f);
+    });
+    input.value = ""; // reset the picker so the next click opens a fresh dialog, selection already saved above
+    renderTezFileList(tabId);
+  });
+}
+document.addEventListener("click", (e)=>{
+  if(e.target.classList && e.target.classList.contains("tez-chip-x")){
+    const tabId = e.target.dataset.tab;
+    const idx = parseInt(e.target.dataset.idx, 10);
+    tezFileStore[tabId].splice(idx, 1);
+    renderTezFileList(tabId);
+  }
+});
+wireTezAccumulator("withl21");
+wireTezAccumulator("withoutl21");
+
+function readFileAsArrayBuffer(file){
+  return new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = ()=>res(r.result);
+    r.onerror = rej;
+    r.readAsArrayBuffer(file);
+  });
+}
+function readFileAsText(file){
+  return new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = ()=>res(r.result);
+    r.onerror = rej;
+    r.readAsText(file);
+  });
+}
+
+async function parseMasterFile(file, tabId){
+  let wb;
+  if(file){
+    const buf = await readFileAsArrayBuffer(file);
+    wb = XLSX.read(buf, {type:"array"});
+  } else {
+    log(tabId, "  No Master_File uploaded — using built-in Master Data (" + EMBEDDED_MASTER_DATA.length + " sites).");
+    wb = buildEmbeddedMasterWorkbook();
+  }
+  const sheetNamesLower = wb.SheetNames.map(s=>s.toLowerCase());
+  const siteCodeDict = {}, destDict = {}, cityDict = {}, forcedSet = new Set();
+
+  const idxSites = sheetNamesLower.indexOf("sites");
+  const idxCodes = sheetNamesLower.indexOf("sites&codes");
+  const idxRemove = sheetNamesLower.indexOf("remove_selection");
+
+  if(idxSites === -1 && idxCodes === -1){
+    throw new Error("Neither 'Sites' nor 'Sites&Codes' sheet found in Master file!");
+  }
+
+  if(idxSites !== -1){
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[idxSites]], {defval:""});
+    if(rows.length){
+      const cols = Object.keys(rows[0]);
+      const lowerMap = {}; cols.forEach(c=>lowerMap[c.toString().toLowerCase().trim()] = c);
+      const cSiteCode = lowerMap["site code"] || cols[0];
+      const cSite     = lowerMap["site"]      || cols[1];
+      const cDest     = lowerMap["destination"] || (cols.length>4 ? cols[4] : null);
+      const cCity     = lowerMap["city"]        || (cols.length>3 ? cols[3] : null);
+      rows.forEach(r=>{
+        const site = cleanStr(r[cSite]);
+        if(!site) return;
+        const sc = cleanStr(r[cSiteCode]);
+        if(sc) siteCodeDict[site] = sc;
+        if(cDest){ const d = cleanStr(r[cDest]); if(d) destDict[site] = d; }
+        if(cCity){ const ci = cleanStr(r[cCity]); if(ci) cityDict[site] = ci; }
+      });
+    }
+  }
+  if(idxCodes !== -1){
+    const arr = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[idxCodes]], {header:1, defval:""});
+    arr.forEach(row=>{
+      const key = cleanStr(row[0]);
+      if(!key) return;
+      if(row.length>1){ const v = cleanStr(row[1]); if(v) siteCodeDict[key] = v; }
+      if(row.length>2){ const v = cleanStr(row[2]); if(v) destDict[key] = v; }
+    });
+  }
+  if(idxRemove !== -1){
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[idxRemove]], {defval:""});
+    if(rows.length){
+      const cols = Object.keys(rows[0]);
+      const lowerMap = {}; cols.forEach(c=>lowerMap[c.toString().toLowerCase().trim()] = c);
+      const cAsin = lowerMap["asin"] || cols[0];
+      const cStat = lowerMap["status"] || (cols.length>2 ? cols[2] : cols[cols.length-1]);
+      rows.forEach(r=>{
+        const asin = cleanStr(r[cAsin]);
+        const stat = cleanStr(r[cStat]).toLowerCase();
+        if(asin && stat === "removed") forcedSet.add(asin);
+      });
+    }
+  }
+  log(tabId, "  Sites loaded: " + Object.keys(siteCodeDict).length + " | Destinations: " + Object.keys(destDict).length + " | Cities: " + Object.keys(cityDict).length + " | Forced ASINs: " + forcedSet.size);
+  return {siteCodeDict, destDict, cityDict, forcedSet};
+}
+
+async function parseTezFiles(fileList, tabId){
+  const sellerDict = {};
+  const produceSet = new Set();
+  for(const file of fileList){
+    log(tabId, "  Loading TEZ: " + file.name);
+    const buf = await readFileAsArrayBuffer(file);
+    const wb = XLSX.read(buf, {type:"array"});
+    for(const sn of wb.SheetNames){
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], {defval:""});
+      if(!rows.length) continue;
+      const cols = Object.keys(rows[0]);
+      const lowerMap = {}; cols.forEach(c=>lowerMap[c.toString().toLowerCase().trim()] = c);
+      const cAsin = lowerMap["asin"];
+      const cSeller = lowerMap["p3p_seller_name"];
+      if(!cAsin || !cSeller) continue;
+      const cWbr = lowerMap["wbr_gl_description"];
+      let n=0, prod=0;
+      rows.forEach(r=>{
+        const asin = cleanStr(r[cAsin]);
+        if(!asin) return;
+        if(cWbr){
+          const wbr = cleanStr(r[cWbr]).toLowerCase();
+          if(wbr === "produce" || wbr === "fresh produce"){
+            produceSet.add(asin);
+            prod++;
+            return;
+          }
+        }
+        sellerDict[asin] = cleanStr(r[cSeller]);  // last TEZ file/sheet wins (matches original dict.update() semantics)
+        n++;
+      });
+      log(tabId, "    Sheet \"" + sn + "\": " + n + " seller rows, " + prod + " produce excluded");
+    }
+  }
+  produceSet.forEach(a=>{ delete sellerDict[a]; });
+  log(tabId, "  TEZ done. Seller ASINs: " + Object.keys(sellerDict).length + " | Produce excluded: " + produceSet.size);
+  return {sellerDict, produceSet};
+}
+
+async function parseL21File(file, tabId){
+  const text = await readFileAsText(file);
+  const parsed = Papa.parse(text, {delimiter:"\t", header:true, skipEmptyLines:true});
+  const l21Dict = {};
+  const lowerCols = {};
+  if(parsed.meta && parsed.meta.fields){
+    parsed.meta.fields.forEach(f=> lowerCols[f.toLowerCase().trim()] = f);
+  }
+  const cAsinFc = lowerCols["asin_fc"];
+  const cSaleDays = lowerCols["sale_days_l21"];
+  const cUnits = lowerCols["units_l21"];
+  if(!cAsinFc || !cSaleDays || !cUnits){
+    throw new Error("L21 file missing required columns (asin_fc, sale_days_l21, units_l21)");
+  }
+  parsed.data.forEach(r=>{
+    const key = cleanStr(r[cAsinFc]).toUpperCase();
+    if(!key) return;
+    l21Dict[key] = {saleDays: toNum(r[cSaleDays],0), units: toNum(r[cUnits],0)};
+  });
+  log(tabId, "  L21 loaded: " + Object.keys(l21Dict).length + " ASIN+WH keys");
+  return l21Dict;
+}
+
+async function parseInventoryCsv(file, rowOffset, tabId){
+  const text = await readFileAsText(file);
+  const parsed = Papa.parse(text, {header:false, skipEmptyLines:true});
+  const data = parsed.data;
+  const rows = [];
+  for(let i=1;i<data.length;i++){
+    const r = data[i];
+    if(!r || r.length < 8) continue;
+    const bin = cleanBin(r[1]);
+    rows.push({
+      WH: cleanStr(r[0]),
+      Bin: bin,
+      ASIN: cleanStr(r[3]),
+      Qty: toNum(r[6],0),
+      Age: toNum(r[7],0),
+      Zone: extractZone(r[1]),
+      RowOrder: rowOffset + i
+    });
+  }
+  log(tabId, "  " + file.name + ": " + rows.length + " data rows parsed");
+  return rows;
+}
+
+function promptMissingSites(uniqueWhs, siteCodeDict, destDict, cityDict, tabId){
+  let added = 0;
+  uniqueWhs.forEach(wh=>{
+    wh = cleanStr(wh);
+    if(!wh) return;
+    if(!(wh in siteCodeDict)){
+      const v = window.prompt("Warehouse '" + wh + "' has NO SITE CODE.\nEnter Site Code (or Cancel to leave as UNKNOWN):");
+      if(v && v.trim()){ siteCodeDict[wh] = v.trim(); added++; }
+    }
+    if(!(wh in destDict)){
+      const v = window.prompt("Warehouse '" + wh + "' has NO DESTINATION.\nEnter Destination (or Cancel to leave blank):");
+      if(v && v.trim()) destDict[wh] = v.trim();
+    }
+    if(!(wh in cityDict)){
+      const v = window.prompt("Warehouse '" + wh + "' has NO CITY.\nEnter City (or Cancel to leave as Unknown):");
+      if(v && v.trim()) cityDict[wh] = v.trim();
+    }
+  });
+  if(added) log(tabId, "  Added " + added + " manual site code entries for this session (not written back to Master file).");
+}
+
+function applyQtyCap(rows, qtyField, baseMap, maxQty){
+  const cum = {};
+  const out = [];
+  for(const r of rows){
+    const wh = r.WH;
+    const qtyInt = Math.max(0, Math.trunc(r[qtyField]));
+    const prevCum = cum[wh] || 0;
+    const base = (baseMap && baseMap[wh]) || 0;
+    const remaining = Math.max(0, maxQty - base - prevCum);
+    const actual = Math.min(qtyInt, remaining);
+    cum[wh] = prevCum + qtyInt;
+    if(actual > 0){
+      out.push(Object.assign({}, r, {actual_qty: actual}));
+    }
+  }
+  return out;
+}
+
+function makeOutputRow(r, siteCodeDict, destDict, cityDict){
+  return {
+    storeId: siteCodeDict[r.WH] || "UNKNOWN",
+    removal_type: "REMOVAL_TRANSSHIP",
+    asin: r.ASIN,
+    quantity: r.actual_qty,
+    zone: "BOH",
+    destination: destDict[r.WH] || "",
+    vendor_code: "",
+    expirationInDays: "",
+    removal_code: "",
+    binId: r.Bin,
+    Internal_City: cityDict[r.WH] || "Unknown",
+    Internal_WH: r.WH
+  };
+}
+
+function toCsv(rows, cols){
+  const esc = (v)=>{
+    v = (v===undefined||v===null) ? "" : String(v);
+    if(/[",\n]/.test(v)) return '"' + v.replace(/"/g,'""') + '"';
+    return v;
+  };
+  const lines = [cols.join(",")];
+  rows.forEach(r=> lines.push(cols.map(c=>esc(r[c])).join(",")));
+  return lines.join("\n");
+}
+
+async function exportResults(tabId, outputRows, filenameFn, modeLabel){
+  const resultsCard = document.getElementById(tabId+"-results");
+  const summaryDiv = document.getElementById(tabId+"-summary");
+  resultsCard.style.display = "block";
+
+  if(!outputRows.length){
+    summaryDiv.innerHTML = "<p>No records met the criteria after processing.</p>";
+    log(tabId, "No output rows — nothing to export.");
+    return;
+  }
+
+  const byCity = new Map();
+  outputRows.forEach(r=>{
+    if(!byCity.has(r.Internal_City)) byCity.set(r.Internal_City, []);
+    byCity.get(r.Internal_City).push(r);
+  });
+
+  const zip = new JSZip();
+  let totalQty = 0, fileCount = 0;
+  const whTotalsAll = {};
+  const cityRowsHtml = [];
+
+  const timestamp = new Date().toISOString().replace(/[-:T]/g,"").slice(0,15).replace(/(\d{8})(\d{6})/,"$1_$2");
+
+  for(const [city, rows] of byCity.entries()){
+    const dests = Array.from(new Set(rows.map(r=>r.destination).filter(d=>d && d.trim()))).sort();
+    const destList = dests.length ? dests.join("_") : "NoDest";
+    const cleanCity = String(city).replace(/[^a-zA-Z0-9 \-_]/g,"").trim();
+    const cleanDest = String(destList).replace(/[^a-zA-Z0-9 \-_+]/g,"").trim();
+    const fname = filenameFn(cleanCity, cleanDest, timestamp);
+
+    const csvContent = toCsv(rows, OUT_COLS);
+    zip.file(fname, csvContent);
+    fileCount++;
+
+    const whTotals = {};
+    rows.forEach(r=>{ whTotals[r.Internal_WH] = (whTotals[r.Internal_WH]||0) + r.quantity; });
+    let cityQty = 0;
+    Object.entries(whTotals).forEach(([wh,qty])=>{
+      whTotalsAll[wh] = (whTotalsAll[wh]||0) + qty;
+      cityQty += qty; totalQty += qty;
+    });
+    cityRowsHtml.push("<tr><td>" + city + "</td><td>" + fname + "</td><td>" + rows.length.toLocaleString() + "</td><td>" + cityQty.toLocaleString() + "</td></tr>");
+  }
+
+  const zipBlob = await zip.generateAsync({type:"blob"});
+  const url = URL.createObjectURL(zipBlob);
+
+  const whRowsHtml = Object.entries(whTotalsAll).sort((a,b)=>b[1]-a[1])
+    .map(([wh,qty])=>"<tr><td>" + wh + "</td><td>" + qty.toLocaleString() + "</td></tr>").join("");
+
+  summaryDiv.innerHTML =
+    "<p><span class=\"pill ok\">DONE</span> &nbsp; " + modeLabel + " &nbsp;|&nbsp; Files: <b>" + fileCount + "</b> &nbsp;|&nbsp; Total Qty: <b>" + totalQty.toLocaleString() + "</b> &nbsp;|&nbsp; Rows: <b>" + outputRows.length.toLocaleString() + "</b></p>" +
+    "<a class=\"dl-btn\" href=\"" + url + "\" download=\"Reversal_" + modeLabel.replace(/\s+/g,"_") + "_" + timestamp + ".zip\">Download ZIP (" + fileCount + " per-city CSV" + (fileCount===1?"":"s") + ")</a>" +
+    "<h3 style=\"margin-top:18px;\">Per City</h3>" +
+    "<table class=\"summary\"><thead><tr><th>City</th><th>File</th><th>Rows</th><th>Qty</th></tr></thead><tbody>" + cityRowsHtml.join("") + "</tbody></table>" +
+    "<h3 style=\"margin-top:18px;\">Per Warehouse</h3>" +
+    "<table class=\"summary\"><thead><tr><th>Warehouse</th><th>Qty</th></tr></thead><tbody>" + whRowsHtml + "</tbody></table>";
+  log(tabId, "DONE. Files:" + fileCount + " Total Qty:" + totalQty);
+}
+
+function setRunning(btn, running){
+  btn.disabled = running;
+  btn.textContent = running ? "Running..." : btn.dataset.idleLabel;
+}
+
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tabpanel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("panel-"+btn.dataset.tab).classList.add("active");
+  });
+});
+</script>
+<script>
+async function runSimpleMode(tabId, zones, defaultPrefix){
+  const btn = document.getElementById(tabId+"-run");
+  setRunning(btn, true);
+  clearLog(tabId);
+  try{
+    const masterFile = document.getElementById(tabId+"-master").files[0];
+    const csvFiles = document.getElementById(tabId+"-csv").files;
+    const agingThreshold = toNum(document.getElementById(tabId+"-age").value, 70);
+    const maxQty = toNum(document.getElementById(tabId+"-maxqty").value, 1000) || 1000;
+
+    // masterFile optional — falls back to built-in embedded Master Data when not selected
+    if(!csvFiles.length){ alert("Select at least one Inventory CSV file."); return; }
+
+    log(tabId, "Step 1/5: Loading Master file...");
+    const m = await parseMasterFile(masterFile, tabId);
+
+    log(tabId, "Step 2/5: Loading & filtering " + csvFiles.length + " CSV file(s) [zones: " + zones.join(",") + ", age>=" + agingThreshold + "]...");
+    let rowOffset = 0;
+    let allRows = [];
+    for(const f of csvFiles){
+      const rows = await parseInventoryCsv(f, rowOffset, tabId);
+      rowOffset += rows.length;
+      const filtered = rows.filter(r=>{
+        if(!zones.includes(r.Zone)) return false;
+        const isForced = m.forcedSet.has(r.ASIN);
+        const ageOk = r.Age >= agingThreshold;
+        if(!(isForced || ageOk)) return false;
+        r.IsForced = isForced;
+        return true;
+      });
+      allRows = allRows.concat(filtered);
+    }
+    log(tabId, "  Rows after filter: " + allRows.length);
+    if(!allRows.length){ log(tabId, "No data passed filters!"); return; }
+
+    log(tabId, "Step 3/5: Sorting by age (descending)...");
+    allRows.sort((a,b)=> b.Age - a.Age);
+
+    log(tabId, "Step 4/5: Validating sites, destinations & cities...");
+    const uniqueWhs = Array.from(new Set(allRows.map(r=>r.WH))).filter(Boolean);
+    promptMissingSites(uniqueWhs, m.siteCodeDict, m.destDict, m.cityDict, tabId);
+
+    log(tabId, "Step 5/5: Applying partial fill (max " + maxQty + " per store)...");
+    const capped = applyQtyCap(allRows, "Qty", null, maxQty);
+    const outputRows = capped.map(r=>makeOutputRow(r, m.siteCodeDict, m.destDict, m.cityDict));
+
+    await exportResults(tabId, outputRows, (city,dest,ts)=>(defaultPrefix+city+"_"+dest+"_AGING_"+ts+".csv"), defaultPrefix.replace(/_$/,""));
+  }catch(e){
+    log(tabId, "ERROR: " + e.message);
+    console.error(e);
+    alert("Error: " + e.message);
+  }finally{
+    setRunning(btn, false);
+  }
+}
+
+document.getElementById("aging70-run").dataset.idleLabel = "Run Aging 70+";
+document.getElementById("aging70-run").addEventListener("click", ()=> runSimpleMode("aging70", ["AMB","HAZ"], "Aging70_"));
+
+document.getElementById("haz-run").dataset.idleLabel = "Run HAZ";
+document.getElementById("haz-run").addEventListener("click", ()=> runSimpleMode("haz", ["HAZ"], "HAZ_"));
+
+document.getElementById("hrv-run").dataset.idleLabel = "Run HRV";
+document.getElementById("hrv-run").addEventListener("click", ()=> runSimpleMode("hrv", ["HRV"], "HRV_"));
+
+document.getElementById("withoutl21-run").dataset.idleLabel = "Run Without-L21";
+document.getElementById("withoutl21-run").addEventListener("click", async ()=>{
+  const tabId = "withoutl21";
+  const btn = document.getElementById(tabId+"-run");
+  setRunning(btn, true);
+  clearLog(tabId);
+  try{
+    const masterFile = document.getElementById(tabId+"-master").files[0];
+    const tezFiles = tezFileStore[tabId];
+    const csvFiles = document.getElementById(tabId+"-csv").files;
+    const mode = document.querySelector('input[name="withoutl21-mode"]:checked').value;
+    const agingMode = mode === "aging";
+    const agingThresholdInput = toNum(document.getElementById(tabId+"-age").value, 12);
+    const agingThreshold = agingMode ? (agingThresholdInput>0 ? agingThresholdInput : 12) : 0;
+    const maxQty = toNum(document.getElementById(tabId+"-maxqty").value, 1000) || 1000;
+
+    // masterFile optional — falls back to built-in embedded Master Data when not selected
+    if(!tezFiles.length){ alert("Select at least one TEZ file."); return; }
+    if(!csvFiles.length){ alert("Select at least one Inventory CSV file."); return; }
+
+    log(tabId, "Step 1/8: Loading Master file...");
+    const m = await parseMasterFile(masterFile, tabId);
+
+    log(tabId, "Step 2/8: Loading TEZ file(s)...");
+    const t = await parseTezFiles(tezFiles, tabId);
+    if(!Object.keys(t.sellerDict).length){ log(tabId,"ERROR: No ASIN data loaded from TEZ files!"); return; }
+
+    const modeText = agingMode ? "AGING" : "STANDARD";
+    log(tabId, "Step 3/8: Mode=" + modeText + (agingMode?(" Aging>="+agingThreshold):" (no age filter)") + ", Max Qty=" + maxQty);
+
+    log(tabId, "Step 4/8: Loading & filtering " + csvFiles.length + " CSV file(s) [zones: AMB/HAZ/HRV/MLK/TEM/TEMP]...");
+    let rowOffset = 0;
+    let allRows = [];
+    for(const f of csvFiles){
+      const rows = await parseInventoryCsv(f, rowOffset, tabId);
+      rowOffset += rows.length;
+      const filtered = rows.filter(r=>{
+        if(!VALID_ZONES_FULL.has(r.Zone)) return false;
+        if(t.produceSet.has(r.ASIN)) return false;
+        const isForced = m.forcedSet.has(r.ASIN);
+        const notInTez = !(r.ASIN in t.sellerDict);
+        let standardOk;
+        if(agingMode) standardOk = notInTez && (r.Age >= agingThreshold);
+        else standardOk = notInTez;
+        if(!(isForced || standardOk)) return false;
+        r.IsForced = isForced;
+        return true;
+      });
+      allRows = allRows.concat(filtered);
+    }
+    log(tabId, "  Total rows passed filter: " + allRows.length);
+    if(!allRows.length){ log(tabId, "No data passed filters!"); return; }
+
+    if(agingMode){
+      log(tabId, "Step 5/8: Sorting by age (descending)...");
+      allRows.sort((a,b)=> b.Age - a.Age);
+    } else {
+      log(tabId, "Step 5/8: Standard mode — skipping sort.");
+    }
+
+    log(tabId, "Step 6/8: Validating sites, destinations & cities...");
+    const uniqueWhs = Array.from(new Set(allRows.map(r=>r.WH))).filter(Boolean);
+    promptMissingSites(uniqueWhs, m.siteCodeDict, m.destDict, m.cityDict, tabId);
+
+    log(tabId, "Step 7/8: Applying partial fill (max " + maxQty + " per store)...");
+    const capped = applyQtyCap(allRows, "Qty", null, maxQty);
+    const outputRows = capped.map(r=>makeOutputRow(r, m.siteCodeDict, m.destDict, m.cityDict));
+    log(tabId, "  Output rows: " + outputRows.length + " | Total qty: " + outputRows.reduce((s,r)=>s+r.quantity,0));
+
+    log(tabId, "Step 8/8: Exporting per-city CSV files...");
+    await exportResults(tabId, outputRows, (city,dest,ts)=>(city+"_"+dest+"_WithoutL21_"+modeText+"_"+ts+".csv"), "Without-L21 "+modeText);
+  }catch(e){
+    log(tabId, "ERROR: " + e.message);
+    console.error(e);
+    alert("Error: " + e.message);
+  }finally{
+    setRunning(btn, false);
+  }
+});
+</script>
+<script>
+document.getElementById("withl21-run").dataset.idleLabel = "Run With-L21";
+document.getElementById("withl21-run").addEventListener("click", async ()=>{
+  const tabId = "withl21";
+  const btn = document.getElementById(tabId+"-run");
+  setRunning(btn, true);
+  clearLog(tabId);
+  try{
+    const masterFile = document.getElementById(tabId+"-master").files[0];
+    const tezFiles = tezFileStore[tabId];
+    const l21File = document.getElementById(tabId+"-l21").files[0];
+    const csvFiles = document.getElementById(tabId+"-csv").files;
+    const mode = document.querySelector('input[name="withl21-mode"]:checked').value;
+    const agingMode = mode === "aging";
+    const agingThreshold = toNum(document.getElementById(tabId+"-age").value, 12) || 12;
+    const maxQty = toNum(document.getElementById(tabId+"-maxqty").value, 1000) || 1000;
+    const modeText = agingMode ? "AGING" : "STANDARD";
+
+    // masterFile optional — falls back to built-in embedded Master Data when not selected
+    if(!tezFiles.length){ alert("Select at least one TEZ file."); return; }
+    if(!l21File){ alert("Select the L21 data file."); return; }
+    if(!csvFiles.length){ alert("Select at least one Inventory CSV file."); return; }
+
+    log(tabId, "Step 1/12: Loading Master file...");
+    const m = await parseMasterFile(masterFile, tabId);
+
+    log(tabId, "Step 2/12: Loading TEZ file(s)...");
+    const t = await parseTezFiles(tezFiles, tabId);
+    if(!Object.keys(t.sellerDict).length){ log(tabId,"ERROR: No ASIN data from TEZ!"); return; }
+
+    log(tabId, "Step 3/12: Loading L21 file...");
+    const l21Dict = await parseL21File(l21File, tabId);
+
+    log(tabId, "Step 4/12: Loading & filtering " + csvFiles.length + " CSV file(s) [" + modeText + ", Age>=" + agingThreshold + "]...");
+    let rowOffset = 0;
+    let allRows = [];
+    for(const f of csvFiles){
+      const rows = await parseInventoryCsv(f, rowOffset, tabId);
+      rowOffset += rows.length;
+      const filtered = rows.filter(r=>{
+        if(!VALID_ZONES_FULL.has(r.Zone)) return false;
+        if(t.produceSet.has(r.ASIN)) return false;
+        const isForced = m.forcedSet.has(r.ASIN);
+        const seller = t.sellerDict[r.ASIN] || "";
+        const sellerValid = seller !== "" && !seller.toLowerCase().includes("p3");
+        const ageValid = r.Age >= agingThreshold;
+        const standardOk = ageValid && sellerValid;
+        if(!(isForced || standardOk)) return false;
+        r.IsForced = isForced;
+        return true;
+      });
+      allRows = allRows.concat(filtered);
+    }
+    log(tabId, "  Rows after filter: " + allRows.length);
+    if(!allRows.length){ log(tabId, "No data passed filters!"); return; }
+
+    log(tabId, "Step 5/12: Aggregating by WH + Bin + ASIN...");
+    const aggMap = new Map();
+    allRows.forEach(r=>{
+      const key = r.WH+"|"+r.Bin+"|"+r.ASIN;
+      let g = aggMap.get(key);
+      if(!g){
+        g = {WH:r.WH, Bin:r.Bin, ASIN:r.ASIN, Qty:0, RowOrder:r.RowOrder, Age:r.Age, IsForced:false};
+        aggMap.set(key, g);
+      }
+      g.Qty += r.Qty;
+      g.RowOrder = Math.min(g.RowOrder, r.RowOrder);
+      g.Age = Math.max(g.Age, r.Age);
+      g.IsForced = g.IsForced || r.IsForced;
+    });
+    let aggRows = Array.from(aggMap.values());
+    aggRows.forEach(r=>{
+      r.ASINWH = r.ASIN + r.WH;
+      const l21 = l21Dict[r.ASINWH.toUpperCase()];
+      const units = l21 ? l21.units : 0;
+      const saleDays = l21 ? l21.saleDays : 0;
+      r.L21_Val = units;
+      r.L15_Val = (saleDays >= 15) ? units : 0;
+    });
+    log(tabId, "  Aggregated rows: " + aggRows.length);
+
+    log(tabId, "Step 6/12: Sorting (" + modeText + ")...");
+    if(agingMode){
+      aggRows.sort((a,b)=> b.Age - a.Age);
+    } else {
+      aggRows.sort((a,b)=> (a.ASINWH < b.ASINWH ? -1 : a.ASINWH > b.ASINWH ? 1 : a.RowOrder - b.RowOrder));
+    }
+
+    log(tabId, "Step 7/12: Calculating reversals...");
+    const seenNonForced = new Set();
+    aggRows.forEach(r=>{
+      r.Reversal = r.Qty;
+      if(!r.IsForced){
+        if(!seenNonForced.has(r.ASINWH)){
+          r.Reversal = r.Qty - 1;
+          seenNonForced.add(r.ASINWH);
+        }
+      }
+    });
+
+    log(tabId, "Step 8/12: Validating sites, destinations & cities...");
+    const uniqueWhs = Array.from(new Set(aggRows.map(r=>r.WH))).filter(Boolean);
+    promptMissingSites(uniqueWhs, m.siteCodeDict, m.destDict, m.cityDict, tabId);
+
+    log(tabId, "Step 9/12: L21 pass (max " + maxQty + " per store)...");
+    const l21Candidates = aggRows.filter(r=> r.IsForced ? (r.Reversal > 0) : (r.L21_Val === 0 && r.Reversal !== 0));
+    const l21Capped = applyQtyCap(l21Candidates, "Reversal", null, maxQty);
+    let outputRows = l21Capped.map(r=>makeOutputRow(r, m.siteCodeDict, m.destDict, m.cityDict));
+
+    const l21StoreQty = {};
+    uniqueWhs.forEach(wh=> l21StoreQty[wh] = 0);
+    l21Capped.forEach(r=>{ l21StoreQty[r.WH] = (l21StoreQty[r.WH]||0) + r.actual_qty; });
+
+    log(tabId, "Step 10/12: L21 summary...");
+    let l21Msg = "L21 RESULTS\n";
+    const deficitSites = [];
+    uniqueWhs.forEach(wh=>{
+      const qty = l21StoreQty[wh]||0;
+      l21Msg += wh + "  " + qty.toLocaleString() + "\n";
+      if(qty < maxQty) deficitSites.push(wh);
+    });
+    l21Msg += deficitSites.length + "/" + uniqueWhs.length + " deficit";
+    log(tabId, l21Msg.replace(/\n/g,"\n  "));
+
+    let ranL15 = false;
+    if(deficitSites.length){
+      const runL15 = window.confirm(l21Msg + "\n\nRun L15 pass for deficit sites?\nOK = Run L15   |   Cancel = Export L21 only");
+      if(runL15){
+        const siteInput = window.prompt("Deficit sites: " + deficitSites.join(", ") + "\n\nEnter sites for L15 (comma/space separated, or ALL):", "ALL");
+        if(siteInput && siteInput.trim()){
+          let l15Targets;
+          if(siteInput.trim().toUpperCase() === "ALL"){
+            l15Targets = new Set(deficitSites.map(s=>String(s).toUpperCase()));
+          } else {
+            l15Targets = new Set(siteInput.replace(/,/g," ").split(/\s+/).filter(Boolean).map(s=>s.toUpperCase()));
+          }
+          if(l15Targets.size && window.confirm("Run L15 for " + l15Targets.size + " site(s)?\n" + Array.from(l15Targets).join(", "))){
+            ranL15 = true;
+            log(tabId, "Running L15 pass...");
+            const l15Base = {};
+            uniqueWhs.forEach(wh=>{ l15Base[String(wh).toUpperCase()] = l21StoreQty[wh]||0; });
+
+            const l15Candidates = aggRows
+              .filter(r=> !r.IsForced && l15Targets.has(String(r.WH).toUpperCase()) && r.L21_Val > 0 && r.L15_Val === 0 && r.Reversal !== 0)
+              .map(r=> Object.assign({}, r, {_origWh: r.WH, WH: String(r.WH).toUpperCase()}));
+
+            const l15Capped = applyQtyCap(l15Candidates, "Reversal", l15Base, maxQty);
+            l15Capped.forEach(r=>{ r.WH = r._origWh; });
+            const l15Output = l15Capped.map(r=>makeOutputRow(r, m.siteCodeDict, m.destDict, m.cityDict));
+            outputRows = outputRows.concat(l15Output);
+            log(tabId, "  L15 pass added " + l15Output.length + " rows.");
+          }
+        }
+      }
+    }
+
+    log(tabId, "Step 11/12: Finalizing output...");
+    log(tabId, "  Output rows: " + outputRows.length);
+
+    log(tabId, "Step 12/12: Exporting per-city CSV files...");
+    const l15Tag = ranL15 ? "+L15" : "";
+    await exportResults(tabId, outputRows, (city,dest,ts)=>(city+"_"+dest+"_"+modeText+l15Tag+"_"+ts+".csv"), "With-L21 "+modeText+l15Tag);
+  }catch(e){
+    log(tabId, "ERROR: " + e.message);
+    console.error(e);
+    alert("Error: " + e.message);
+  }finally{
+    setRunning(btn, false);
+  }
+});
+</script>
+</body>
+</html>
